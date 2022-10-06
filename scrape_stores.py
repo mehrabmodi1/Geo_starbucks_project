@@ -4,18 +4,16 @@ Created on Thu Oct  6 09:23:21 2022
 
 @author: Mehrab
 """
-
-import geopandas as gpd
-import folium
-import shapely
-import googlemaps
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
-import pdb
+
 
 #This function is based on an exploration done in scrape_stores_exploration.ipynb
-def scrape_stores_URL(URL):
+def scrape_stores_URL(URL, base_df):
+    #URL is the store-locator URL to scrape store info from
+    #base_df is the existing dataframe to which newly scraped stores will be added.
+    
     r = requests.get(URL)
 
     if not (r.status_code < 300):
@@ -37,7 +35,7 @@ def scrape_stores_URL(URL):
         #function to get text in pair of "" after text tag
         start_ind = string.find(tag) 
         if start_ind == -1:
-            return [], []
+            return None, None
         else:
             start_ind = start_ind + (len(tag) + 2)        
         ind1 = string.find('"', start_ind)
@@ -65,11 +63,12 @@ def scrape_stores_URL(URL):
     store_n = 0
     while 1:
         storeNumber, parse_inds = get_tag_text(data_str, 'storeNumber')
-        if len(store_n) == 0:
+        #pdb.set_trace()
+        if storeNumber == None:
             break
             
-        if store_n == 100:
-            pdb.set_trace()
+        #if store_n == 100:
+        #    pdb.set_trace()
             
         data_str = data_str[(parse_inds[1] + 1):]
         latlong, parse_inds = get_latlong(data_str)
@@ -99,6 +98,9 @@ def scrape_stores_URL(URL):
         if store_n == 0 :
             stores_df = curr_store
         else:
+            
+            #PICK UP THREAD HERE
+            #only add store if not alread in store_df
             stores_df = pd.concat([stores_df, curr_store], ignore_index = False)
             
         store_n += 1
@@ -106,3 +108,8 @@ def scrape_stores_URL(URL):
     stores_df.reset_index(drop = True, inplace = True)
     
     return stores_df
+
+
+#running lines
+#URL = 'https://www.starbucks.com/store-locator?map=38.90431,-77.0352,13z&place=Washington,%20DC,%20USA'
+#store_df = scrape_stores_URL(URL)
