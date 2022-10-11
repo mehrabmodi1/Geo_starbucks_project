@@ -66,7 +66,7 @@ def scrape_stores_URL(URL, base_df):
         #pdb.set_trace()
         if storeNumber == None:
             break
-            
+                    
         #if store_n == 100:
         #    pdb.set_trace()
             
@@ -83,7 +83,8 @@ def scrape_stores_URL(URL, base_df):
         data_str = data_str[(parse_inds[1] + 1):]
         hours, parse_inds = get_tag_text(data_str, 'hours')
         data_str = data_str[(parse_inds[1] + 1):]
-    
+        
+        
         curr_store = pd.DataFrame(
             {'storeNumber': [storeNumber],
              'city': [city],
@@ -98,12 +99,11 @@ def scrape_stores_URL(URL, base_df):
         if store_n == 0 :
             stores_df = curr_store
         else:
-            
-            #PICK UP THREAD HERE
-            #only add store if not alread in store_df
-            stores_df = pd.concat([stores_df, curr_store], ignore_index = False)
-            
-        store_n += 1
+            #skipping if this store has already been scraped
+            if storeNumber not in list(stores_df['storeNumber']):
+                #only add store if not alread in store_df
+                stores_df = pd.concat([stores_df, curr_store], ignore_index = False)
+                store_n += 1
     
     stores_df.reset_index(drop = True, inplace = True)
     
@@ -111,5 +111,5 @@ def scrape_stores_URL(URL, base_df):
 
 
 #running lines
-#URL = 'https://www.starbucks.com/store-locator?map=38.90431,-77.0352,13z&place=Washington,%20DC,%20USA'
-#store_df = scrape_stores_URL(URL)
+URL = 'https://www.starbucks.com/store-locator?map=38.90431,-77.0352,13z&place=Washington,%20DC,%20USA'
+store_df = scrape_stores_URL(URL, [])
